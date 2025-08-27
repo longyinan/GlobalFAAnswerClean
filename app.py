@@ -17,27 +17,21 @@ bucket = storage_client.bucket(GCS_BUCKET_NAME)
 
 
 def list_processed_files():
-    """
-    GCSバケットから処理済みの result ファイル一覧を取得し、
-    元ファイル名と結果ファイル名のペアをリストで返す。
-    例：data.csv → data_result.csv
-    """
-    blobs = bucket.list_blobs()
-    results = []
-    result_files = [blob.name for blob in blobs if blob.name.endswith("_result.csv")]
+    blobs = list(bucket.list_blobs())
+    result_files = [b for b in blobs if b.name.endswith("_result.csv")]
 
-    for result_file in result_files:
-        # 元のファイル名を復元
-        if result_file.endswith("_result.csv"):
-            original_filename = result_file[:-len("_result.csv")] + ".csv"
-            # 確認用に元ファイルが存在するかチェック（あれば表示する）
-            if bucket.blob(original_filename).exists():
-                results.append({
-                    "filename": original_filename,
-                    "result_filename": result_file
-                })
-    # ソートして見やすく
-    results.sort(key=lambda x: x["filename"])
+    results = []
+    for result_blob in result_files:
+        original_filename = result_blob.name[:-len("_result.csv")] + ".csv"
+        if bucket.blob(original_filename).exists():
+            results.append({
+                "filename": original_filename,
+                "result_filename": result_blob.name,
+                "updated": result_blob.updated  # 获取更新时间
+            })
+
+    # 最新上传的结果排在最上面
+    results.sort(key=lambda x: x["updated"], reverse=True)
     return results
 
 
