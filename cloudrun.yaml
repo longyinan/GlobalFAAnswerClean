@@ -1,0 +1,26 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: fa-answer-cleaner  # Cloud Runのサービス名
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"  # 最小インスタンス数（常駐させたいなら設定）
+        run.googleapis.com/execution-environment: gen2  # Gen2 を指定
+    spec:
+      containers:
+        - image: gcr.io/pyxis2-1093/fa-answer-cleaner  # イメージのパスを修正
+          ports:
+            - containerPort: 8080
+          env:
+            - name: GOOGLE_CLOUD_PROJECT
+              value: pyxis2-1093  # GCP プロジェクト ID に置き換え
+            - name: GCS_BUCKET_NAME
+              value: global-fa-answer-clean  #  Cloud Storage バケット名
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+      timeoutSeconds: 300  # 処理時間が長い場合は延長
+      containerConcurrency: 80
