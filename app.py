@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = "secret"
 
 # GCSの設定
-GCS_BUCKET_NAME = "your-gcs-bucket-name"  # ←ここを実際のバケット名に置き換えてください
+GCS_BUCKET_NAME = "global-fa-answer-clean"  # バケット名
 
 # GCSクライアント作成
 storage_client = storage.Client()
