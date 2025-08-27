@@ -123,6 +123,6 @@ def process_csv_from_gcs(bucket, input_blob_name: str, output_blob_name: str):
     # 処理結果をGCSにアップロード
     output_blob = bucket.blob(output_blob_name)
     # UTF-8 with BOM（Excel 正常识别）
-	utf8_bom = "\ufeff"
-	output_blob.upload_from_string(utf8_bom + result_text, content_type="text/csv")
+    utf8_bom = "\ufeff"
+    output_blob.upload_from_string(utf8_bom + result_text, content_type="text/csv")
 
