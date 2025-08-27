@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>自由記述回答の品質管理者</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>回答データを選択</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p class="{{ category }}-message">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+        <div class="upload-container">
+            <input type="file" name="file" accept=".csv" required>
+            <input type="submit" value="アップロード">
+        </div>
+    </form>
+
+    <!-- Loading message -->
+    <div id="loading-message" class="loading-message">
+        処理中、少々お待ちください...
+    </div>
+
+    <h2>処理済みデータ一覧</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>番号</th>
+                <th>回答データ</th>
+                <th>結果ダウンロード</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in results %}
+		<tr>
+    		    <td>{{ loop.index }}</td>
+    		    <td>{{ item.filename }}</td>
+    		    <td><a href="{{ url_for('download', filename=item.result_filename) }}">ダウンロード</a></td>
+		</tr>
+	    {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.getElementById("upload-form");
+        const loadingMessage = document.getElementById("loading-message");
+
+        form.addEventListener("submit", function () {
+            loadingMessage.style.display = "block";
+        });
+    </script>
+</body>
+</html>

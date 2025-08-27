@@ -1,0 +1,59 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+}
+
+table {
+    border-collapse: collapse;
+    margin-top: 20px;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+.upload-container {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.upload-container label {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.upload-container input[type="file"],
+.upload-container input[type="submit"] {
+    display: block;
+    margin-top: 10px;
+}
+
+.upload-container input[type="submit"] {
+    margin-top: 20px;
+}
+
+.loading-message {
+    display: none;
+    color: #ff9900;
+    font-weight: bold;
+}
+
+.success-message {
+    color: green;
+    font-weight: bold;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+}
