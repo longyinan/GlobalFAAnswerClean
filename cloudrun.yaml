@@ -1,26 +1,26 @@
-apiVersion: serving.knative.dev/v1
+ï»¿apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: fa-answer-cleaner  # Cloud Run‚ÌƒT[ƒrƒX–¼
+  name: fa-answer-cleaner  # Cloud Runã®ã‚µãƒ¼ãƒ“ã‚¹å
 spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/minScale: "1"  # Å¬ƒCƒ“ƒXƒ^ƒ“ƒX”ií’“‚³‚¹‚½‚¢‚È‚çİ’èj
-        run.googleapis.com/execution-environment: gen2  # Gen2 ‚ğw’è
+        autoscaling.knative.dev/minScale: "1"  # æœ€å°ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹æ•°ï¼ˆå¸¸é§ã•ã›ãŸã„ãªã‚‰è¨­å®šï¼‰
+        run.googleapis.com/execution-environment: gen2  # Gen2 ã‚’æŒ‡å®š
     spec:
       containers:
-        - image: gcr.io/pyxis2-1093/fa-answer-cleaner  # ƒCƒ[ƒW‚ÌƒpƒX‚ğC³
+        - image: gcr.io/pyxis2-1093/fa-answer-cleaner  # ã‚¤ãƒ¡ãƒ¼ã‚¸ã®ãƒ‘ã‚¹ã‚’ä¿®æ­£
           ports:
             - containerPort: 8080
           env:
             - name: GOOGLE_CLOUD_PROJECT
-              value: pyxis2-1093  # GCP ƒvƒƒWƒFƒNƒg ID ‚É’u‚«Š·‚¦
+              value: pyxis2-1093  # GCP ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ ID ã«ç½®ãæ›ãˆ
             - name: GCS_BUCKET_NAME
-              value: global-fa-answer-clean  #  Cloud Storage ƒoƒPƒbƒg–¼
+              value: global-fa-answer-clean  #  Cloud Storage ãƒã‚±ãƒƒãƒˆå
           resources:
             limits:
               memory: "512Mi"
               cpu: "1"
-      timeoutSeconds: 300  # ˆ—ŠÔ‚ª’·‚¢ê‡‚Í‰„’·
+      timeoutSeconds: 300  # å‡¦ç†æ™‚é–“ãŒé•·ã„å ´åˆã¯å»¶é•·
       containerConcurrency: 80
