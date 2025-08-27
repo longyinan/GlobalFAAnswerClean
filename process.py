@@ -14,20 +14,16 @@ PROMPT_FILE = Path("prompt.txt")
 
 BATCH_SIZE = 2000  # バッチサイズ
 
-# APIキーを読み込む
 def load_api_key() -> str:
-    """config.iniからAPIキーを読み込む"""
     for line in CONFIG.read_text(encoding="utf-8").splitlines():
         if line.strip().lower().startswith("api_key"):
             return line.split("=", 1)[1].strip()
     raise RuntimeError("config.ini に api_key が見つかりません")
 
 def read_prompt() -> str:
-    """プロンプトテキストを読み込む"""
     return PROMPT_FILE.read_text(encoding="utf-8").strip()
 
 def clean_to_csv(s: str) -> str:
-    """結果をCSV形式に変換する"""
     s = s.strip()
     if s.startswith("```"):
         s = s.strip("`")
@@ -37,7 +33,6 @@ def clean_to_csv(s: str) -> str:
     return "\n".join(lines)
 
 def call_gemini(api_key: str, prompt_text: str, csv_chunk: str, want_header: bool) -> str:
-    """Gemini APIを呼び出して結果を取得"""
     rules = f"""
 あなたはCSVデータを処理するAIです。
 1) 結果は必ずCSV形式で返してください。
@@ -72,7 +67,6 @@ def call_gemini(api_key: str, prompt_text: str, csv_chunk: str, want_header: boo
         raise RuntimeError(f"モデルからの結果解析失敗: {json.dumps(data, ensure_ascii=False)}")
 
 def append_to_csv_text(existing_text: str, new_text: str, include_header: bool) -> str:
-    """CSVテキストを結合（重複ヘッダー除去）"""
     if not new_text.strip():
         return existing_text
 
@@ -80,7 +74,6 @@ def append_to_csv_text(existing_text: str, new_text: str, include_header: bool) 
     new_lines = new_text.splitlines()
 
     if existing_lines and not include_header:
-        # 新しいテキストの最初の行が既存のヘッダーと同じなら除外
         if new_lines[0].strip() == existing_lines[0].strip():
             new_lines = new_lines[1:]
 
@@ -88,8 +81,6 @@ def append_to_csv_text(existing_text: str, new_text: str, include_header: bool) 
     return "\n".join(combined_lines)
 
 def process_csv_from_gcs(bucket, input_blob_name: str, output_blob_name: str):
-    """GCS上のCSVファイルを処理し、結果をGCSにアップロードする"""
-
     api_key = load_api_key()
     prompt_text = read_prompt()
 
@@ -97,7 +88,6 @@ def process_csv_from_gcs(bucket, input_blob_name: str, output_blob_name: str):
     if not input_blob.exists():
         raise FileNotFoundError(f"Input file {input_blob_name} not found in bucket")
 
-    # CSVを文字列として読み込み
     input_data = input_blob.download_as_text(encoding="utf-8")
     lines = input_data.splitlines()
     if not lines:
@@ -106,7 +96,6 @@ def process_csv_from_gcs(bucket, input_blob_name: str, output_blob_name: str):
     header = lines[0]
     data_rows = lines[1:]
 
-    # 処理結果テキスト初期化
     result_text = ""
 
     for i in range(0, len(data_rows), BATCH_SIZE):
@@ -120,9 +109,6 @@ def process_csv_from_gcs(bucket, input_blob_name: str, output_blob_name: str):
             print(f"第 {i} - {i + len(batch)} 行の処理に失敗しました: {e}")
             time.sleep(1)
 
-    # 処理結果をGCSにアップロード
     output_blob = bucket.blob(output_blob_name)
-    # UTF-8 with BOM（Excel 正常识别）
     utf8_bom = "\ufeff"
     output_blob.upload_from_string(utf8_bom + result_text, content_type="text/csv")
-
