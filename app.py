@@ -4,6 +4,7 @@ from io import BytesIO
 import os
 import tempfile
 from process import process_csv_from_gcs
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -12,10 +13,14 @@ app.secret_key = "secret"
 GCS_BUCKET_NAME = "global-fa-answer-clean"  # バケット名
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "outputs"
+DELETE_OLDER_THAN_DAYS = 1
 
 # GCSクライアント
 storage_client = storage.Client()
 bucket = storage_client.bucket(GCS_BUCKET_NAME)
+
+# 削除対象のフォルダ一覧
+FOLDERS = [UPLOAD_FOLDER, OUTPUT_FOLDER]
 
 
 def list_processed_files():
@@ -24,7 +29,7 @@ def list_processed_files():
 
     results = []
     for result_blob in result_files:
-        # アップロード元ファイルを復元
+        # アップロード元ファイル名を復元
         original_filename = result_blob.name.replace(f"{OUTPUT_FOLDER}/", "").replace("_result.csv", ".csv")
         input_blob_path = f"{UPLOAD_FOLDER}/{original_filename}"
 
@@ -35,11 +40,32 @@ def list_processed_files():
                 "updated": result_blob.updated
             })
 
+    # 更新日時で降順ソート
     results.sort(key=lambda x: x["updated"], reverse=True)
     return results
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/clean", methods=["POST"])
+def delete_old_files():
+    """GCSの uploads/ と outputs/ フォルダ内の古いファイルを削除"""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=DELETE_OLDER_THAN_DAYS)
+
+    deleted_files = []
+    for folder in FOLDERS:
+        blobs = bucket.list_blobs(prefix=f"{folder}/")
+        for blob in blobs:
+            if blob.updated < cutoff:
+                print(f"Deleting {blob.name} (updated: {blob.updated})")
+                blob.delete()
+                deleted_files.append(blob.name)
+
+    return {
+        "status": "success",
+        "deleted_files": deleted_files
+    }, 200
+
+
+@app.route("/index", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         uploaded_file = request.files.get("file")
@@ -63,7 +89,7 @@ def index():
 
         try:
             process_csv_from_gcs(bucket, gcs_input_path, gcs_output_path)
-            flash("回答データを処理完了しました。", "success")
+            flash("回答データの処理が完了しました。", "success")
         except Exception as e:
             flash(f"処理中にエラーが発生しました: {e}", "error")
 
