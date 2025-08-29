@@ -13,7 +13,7 @@ app.secret_key = "secret"
 GCS_BUCKET_NAME = "global-fa-answer-clean"  # バケット名
 UPLOAD_FOLDER = "uploads"                   # アップロード先のフォルダ
 OUTPUT_FOLDER = "outputs"                   # 処理結果の保存先フォルダ
-DELETE_OLDER_THAN_DAYS = 1                  # 削除対象のファイルの経過日数
+DELETE_OLDER_THAN_DAYS = 365                  # 削除対象のファイルの経過日数
 
 # GCSクライアント初期化
 storage_client = storage.Client()
